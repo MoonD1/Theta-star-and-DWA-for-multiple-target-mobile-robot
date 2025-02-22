@@ -89,11 +89,23 @@ int Widget::heuristic(const Node* node, const Node* endNode){
     return std::abs(node -> x - endNode -> x) + std::abs(node -> y - endNode -> y);
 }
 
+// Reset g/h/f/parent.
+void Widget::reset(){
+    for(int i = 0; i < 20; i++){
+        for(int j = 0; j < 20; j++){
+            grid[i][j].g = grid[i][j].f = INT_MAX;
+            grid[i][j].h = 0;
+            grid[i][j].parent = nullptr;
+        }
+    }
+}
+
 // Get A* path.
 QVector<Node*> Widget::findPath(Node* node1, Node* node2){
     if(!node1 || !node2){
         return {};
     }
+    reset();
     std::priority_queue<Node*, std::vector<Node*>, CompareNode> openQueue;
     std::unordered_set<Node*> openSet;
     std::unordered_set<Node*> closeSet;
@@ -153,8 +165,93 @@ QVector<Node*> Widget::findPath(Node* node1, Node* node2){
     return {};
 }
 
-// If click searchPathButton
+// Calculate path size.
+int Widget::calculatePath(int start, int end){
+    if(start > end){
+        std::swap(start, end);
+    }
+    return pathTable[start][end - start - 1].size();
+}
+
+// Get all possible path using backtracking algorithm and choose the shortest path.
+void Widget::getFullArrangement(QVector<int>& nums, QVector<bool>& used, QVector<int>& path){
+    if(path.size() == nums.size() + 1){
+        int curPathSize = 0;
+        for(int i = 0; i < nums.size(); i++){
+            curPathSize += calculatePath(path[i], path[i + 1]);
+        }
+        if(curPathSize < bestPathSize){
+            bestPathSize = curPathSize;
+            bestPath = path;
+        }
+    }
+
+    for(int i = 0; i < nums.size(); i++){
+        if(used[i]){
+            continue;
+        }
+        path.push_back(nums[i]);
+        used[i] = true;
+        getFullArrangement(nums, used, path);
+        used[i] = false;
+        path.pop_back();
+    }
+
+}
+
+// If click searchPathButton.
 void Widget::searchPathButtonClicked(){
+    // Get pathTable.
+    nodes.push_back(startNode);
+    for(int i = 0; i < endNode.size(); i++){
+        nodes.push_back(endNode[i]);
+    }
+    pathTable.resize(nodes.size() - 1);
+    for(int i = 0; i < nodes.size() - 1; i++){
+        pathTable[i].resize(nodes.size() - 1 - i);
+        for(int j = 0; j < nodes.size() - 1 - i; j++){
+            pathTable[i][j] = findPath(nodes[i], nodes[i + j + 1]);
+        }
+    }
+    // Get full arrangement.
+    QVector<int> nums;
+    QVector<bool> used(endNode.size(), false);
+    for(int i = 0; i < endNode.size(); i++){
+        nums.push_back(i + 1);
+    }
+    QVector<int> path = {0};
+    getFullArrangement(nums, used, path);
+    // Output best path.
+    result.push_back(startNode);
+    for(int i = 0; i < bestPath.size() - 1; i++){
+        int start = bestPath[i];
+        int end = bestPath[i + 1];
+        if(start > end){
+            std::swap(start, end);
+            pathTable[start][end - start - 1];
+            std::reverse(pathTable[start][end - start - 1].begin(), pathTable[start][end - start - 1].end());
+        }
+        QVector<Node*> curPath = pathTable[start][end - start - 1];
+        for(int j = 1; j < curPath.size(); j++){
+            result.push_back(curPath[j]);
+        }
+    }
+
+    if(!result.empty()){
+        for(Node* node : result){
+            qDebug() << "(" << node -> x << ", " << node -> y << ")";
+        }
+        qDebug() << "length: " << result.size() - 1;
+    }
+
+
+    /*
+    for(int i = 0; i < bestPath.size(); i++){
+        qDebug() << bestPath[i];
+    }
+    */
+
+    /*
     QVector<Node*> path = findPath(startNode, endNode[0]);
     if(!path.empty()){
         for(Node* node : path){
@@ -165,6 +262,7 @@ void Widget::searchPathButtonClicked(){
     else{
         qDebug() << "Not find path";
     }
+    */
 }
 
 Widget::~Widget() {}
