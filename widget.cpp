@@ -2,6 +2,9 @@
 #define WIDTH 600
 #define HEIGHT 400
 
+#include <queue>
+#include <unordered_set>
+
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
 {
@@ -35,8 +38,13 @@ void Widget::initializeGrid(int width, int height){
 // The function of receiving paint events passed in event.
 void Widget::paintEvent(QPaintEvent* event){
     QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
     drawGrid(painter);
+    if(robotInitialized){
+        drawRobot(painter);
+    }
 }
+
 
 // Make initialize grid.
 void Widget::drawGrid(QPainter& painter){
@@ -70,6 +78,12 @@ void Widget::mousePressEvent(QMouseEvent* event){
     // Use leftbutton set obstacle.
     if(event -> button() == Qt::LeftButton){
         grid[x][y].isObstacle = !grid[x][y].isObstacle;
+        if(obstacles.find({grid[x][y].x * 20 + 10, grid[x][y].y * 20 + 10}) == obstacles.end()){
+            obstacles.insert({grid[x][y].x * 20 + 10, grid[x][y].y * 20 + 10});
+        }
+        else{
+            obstacles.remove({grid[x][y].x * 20 + 10, grid[x][y].y * 20 + 10});
+        }
     }
     // Use rightbutton set start/end node.
     else if(event -> button() == Qt::RightButton){
@@ -166,7 +180,7 @@ QVector<Node*> Widget::findPath(Node* node1, Node* node2){
 }
 
 // Calculate path size.
-int Widget::calculatePath(int start, int end){
+int Widget::calculatePath(int start, int end) const{
     if(start > end){
         std::swap(start, end);
     }
@@ -244,7 +258,6 @@ void Widget::searchPathButtonClicked(){
         qDebug() << "length: " << result.size() - 1;
     }
 
-
     /*
     for(int i = 0; i < bestPath.size(); i++){
         qDebug() << bestPath[i];
@@ -263,6 +276,73 @@ void Widget::searchPathButtonClicked(){
         qDebug() << "Not find path";
     }
     */
+
+    DWAStart();
+
+}
+
+// Convert point coordinates to pixel coordinates.
+void Widget::CoordinateTransformation(){
+    for(Node* node : result){
+        node -> x = node -> x * 20 + 10;
+        node -> y = node -> y * 20 + 10;
+    }
+}
+
+// Start DWA.
+void Widget::DWAStart(){
+    //Simulate robot.
+    robotInitialized = true;
+    CoordinateTransformation();
+    /*
+    if(!result.empty()){
+        for(Node* node : result){
+            qDebug() << "(" << node -> x << ", " << node -> y << ")";
+        }
+        qDebug() << "length: " << result.size() - 1;
+    }
+    */
+    robot.x = result[0] -> x;
+    robot.y = result[0] -> y;
+    result.pop_front();
+    // Set timer.
+    QTimer* timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &Widget::updateRobot);
+    // Fixedupdate time.
+    timer -> start(50);
+}
+
+// Update robot by timer.
+void Widget::updateRobot(){
+    if(result.empty()){
+        return;
+    }
+    auto [v, omega] = DWA::calculateControl(robot, obstacles, {result[0] -> x, result[0] -> y});
+    // Update robot state.
+    // v = 0.5;
+    //  omega = 0.5;
+    robot.v = v;
+    robot.omega = omega;
+    robot.x += robot.v * cos(robot.theta);
+    robot.y += robot.v * sin(robot.theta);
+    if(resultInRange()){
+        result.pop_front();
+    }
+    robot.theta += robot.omega;
+    update();
+}
+
+// Draw robot.
+void Widget::drawRobot(QPainter& painter){
+    painter.setBrush(Qt::yellow);
+    painter.drawEllipse(robot.x - 5, robot.y - 5, 10, 10);
+    painter.drawLine(robot.x, robot.y, robot.x + 40 * cos(robot.theta), robot.y + 40 * sin(robot.theta));
+}
+
+// If get result front node.
+bool Widget::resultInRange() const{
+    Node* front = result[0];
+    return pow((robot.x - front -> x), 2) + pow((robot.y - front -> y), 2) <= 25;
 }
 
 Widget::~Widget() {}

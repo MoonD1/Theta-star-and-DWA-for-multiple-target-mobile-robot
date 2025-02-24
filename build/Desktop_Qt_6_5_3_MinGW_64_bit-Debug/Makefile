@@ -330,6 +330,7 @@ Makefile: ../../GraduationProgram.pro ../../../../QT/QT/6.5.3/mingw_64/mkspecs/w
 		../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/qt_config.prf \
 		../../../../QT/QT/6.5.3/mingw_64/mkspecs/win32-g++/qmake.conf \
 		../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/exclusive_builds.prf \
 		../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/toolchain.prf \
 		../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/default_pre.prf \
@@ -359,7 +360,6 @@ Makefile: ../../GraduationProgram.pro ../../../../QT/QT/6.5.3/mingw_64/mkspecs/w
 		../../../../QT/QT/6.5.3/mingw_64/lib/Qt6Gui.prl \
 		../../../../QT/QT/6.5.3/mingw_64/lib/Qt6Core.prl \
 		../../../../QT/QT/6.5.3/mingw_64/lib/Qt6EntryPoint.prl \
-		.qmake.stash \
 		../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/build_pass.prf
 	$(QMAKE) -o Makefile ..\..\GraduationProgram.pro -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug"
 ../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/spec_pre.prf:
@@ -622,6 +622,7 @@ Makefile: ../../GraduationProgram.pro ../../../../QT/QT/6.5.3/mingw_64/mkspecs/w
 ../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/qt_config.prf:
 ../../../../QT/QT/6.5.3/mingw_64/mkspecs/win32-g++/qmake.conf:
 ../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/spec_post.prf:
+.qmake.stash:
 ../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/exclusive_builds.prf:
 ../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/toolchain.prf:
 ../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/default_pre.prf:
@@ -651,7 +652,6 @@ Makefile: ../../GraduationProgram.pro ../../../../QT/QT/6.5.3/mingw_64/mkspecs/w
 ../../../../QT/QT/6.5.3/mingw_64/lib/Qt6Gui.prl:
 ../../../../QT/QT/6.5.3/mingw_64/lib/Qt6Core.prl:
 ../../../../QT/QT/6.5.3/mingw_64/lib/Qt6EntryPoint.prl:
-.qmake.stash:
 ../../../../QT/QT/6.5.3/mingw_64/mkspecs/features/build_pass.prf:
 qmake: FORCE
 	@$(QMAKE) -o Makefile ..\..\GraduationProgram.pro -spec win32-g++ "CONFIG+=debug" "CONFIG+=qml_debug"

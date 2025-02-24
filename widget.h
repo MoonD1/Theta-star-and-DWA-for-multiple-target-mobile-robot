@@ -5,20 +5,20 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <math.h>
-#include <queue>
-#include <unordered_set>
 #include <QPushButton>
+#include <QTimer>
 
+#include "dwa.h"
 
 // The nodes in grid.
 struct Node{
-    int x, y;
+    double x, y;
     bool isObstacle;
-    int g, h, f;
+    double g, h, f;
     Node* parent;
 
     Node(): x(0), y(0), isObstacle(false), g(INT_MAX), h(0), f(INT_MAX), parent(nullptr){}
-    Node(int x, int y):x(x), y(y), isObstacle(false), g(INT_MAX), h(0), f(0), parent(nullptr){}
+    Node(double x, double y):x(x), y(y), isObstacle(false), g(INT_MAX), h(0), f(0), parent(nullptr){}
 
 
 };
@@ -69,6 +69,10 @@ private:
     QVector<int> bestPath;
     QVector<Node*> result;
 
+    RobotState robot;
+    QSet<std::pair<double, double>> obstacles;
+    bool robotInitialized = false;
+
     // Initialize.
     void initializeGrid(int width, int height);
     // Make initialize grid.
@@ -80,11 +84,21 @@ private:
     // Get A* path.
     QVector<Node*> findPath(Node* node1, Node* node2);
     // Calculate path size.
-    int calculatePath(int start, int end);
+    int calculatePath(int start, int end) const;
     // Get all possible path using backtracking algorithm and choose the shortest path.
     void getFullArrangement(QVector<int>& nums, QVector<bool>& used, QVector<int>& path);
     // If click searchPathButton.
     void searchPathButtonClicked();
 
+    // Convert point coordinates to pixel coordinates.
+    void CoordinateTransformation();
+    // Start DWA.
+    void DWAStart();
+    // Update robot by timer.
+    void updateRobot();
+    // Draw robot
+    void drawRobot(QPainter& painter);
+    // If get result front node.
+    bool resultInRange() const;
 };
 #endif // WIDGET_H
