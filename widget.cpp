@@ -175,7 +175,7 @@ QVector<Node*> Widget::findPath(Node* node1, Node* node2){
             }
         }
     }
-
+    inaccessible = true;
     return {};
 }
 
@@ -283,9 +283,11 @@ void Widget::searchPathButtonClicked(){
 
 // Convert point coordinates to pixel coordinates.
 void Widget::CoordinateTransformation(){
-    for(Node* node : result){
-        node -> x = node -> x * 20 + 10;
-        node -> y = node -> y * 20 + 10;
+    for(int i = 0; i < 20; i++){
+        for(int j = 0; j < 20; j++){
+            grid[i][j].x = grid[i][j].x * 20 + 10;
+            grid[i][j].y = grid[i][j].y * 20 + 10;
+        }
     }
 }
 
@@ -294,14 +296,14 @@ void Widget::DWAStart(){
     //Simulate robot.
     robotInitialized = true;
     CoordinateTransformation();
-    /*
+
     if(!result.empty()){
         for(Node* node : result){
             qDebug() << "(" << node -> x << ", " << node -> y << ")";
         }
         qDebug() << "length: " << result.size() - 1;
     }
-    */
+
     robot.x = result[0] -> x;
     robot.y = result[0] -> y;
     result.pop_front();

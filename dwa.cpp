@@ -5,6 +5,7 @@ DWA::DWA() {}
 
 // Algorithm.
 std::pair<double, double> DWA::calculateControl(const RobotState& robot, const QSet<std::pair<double, double>>& obstacles, const std::pair<double, double> goal){
+    // qDebug() << goal.first << " " << goal.second;
     QVector<std::pair<double, double>> dynamicWindow = calcDynamicWindow(robot);
     // Initialization.
     std::pair<double, double> bestControl = {0.0, 0.0};
@@ -12,14 +13,14 @@ std::pair<double, double> DWA::calculateControl(const RobotState& robot, const Q
     double bestScore = std::numeric_limits<double>::lowest();
     // Traverse the dynamic window.
     for(double v = dynamicWindow[0].first; v <= dynamicWindow[1].first; v += 0.1){
-        for(double omega = dynamicWindow[0].second; omega <= dynamicWindow[1].second; omega += 0.1){
+        for(double omega = dynamicWindow[0].second; omega <= dynamicWindow[1].second; omega += 0.01){
             QVector<std::pair<double, double>> trajectory = calcTrajectory(robot, v, omega);
             // Calculate cost.
             double toGoalCost = calcToGoalCost(trajectory, goal);
             double obstacleCost = calcObstacleCost(trajectory, obstacles);
             double speedCost = 1.0 - v;
 
-            double score = 0.15 * toGoalCost - obstacleCost - speedCost;
+            double score = 0.15 * toGoalCost - 3 * obstacleCost - speedCost;
 
             if(score > bestScore){
                 // qDebug() << score;
@@ -38,16 +39,16 @@ QVector<std::pair<double, double>> DWA::calcDynamicWindow(const RobotState& robo
     // The range of dynamic window.
     double minV = 0.0;
     double maxV = 1.0;
-    double minOmega = -2.0;
-    double maxOmega = 2.0;
+    double minOmega = -1.0;
+    double maxOmega = 1.0;
     // The range of cur robot dynamic window.
     double minVWithAcceleration = robot.v - 0.1;
     double maxVWithAcceleration = robot.v + 0.1;
-    double minOmegaWithAcceleration = robot.omega - 1;
-    double maxOmegaWithAcceleration = robot.omega + 1;
+    // double minOmegaWithAcceleration = robot.omega - 1;
+    // double maxOmegaWithAcceleration = robot.omega + 1;
     // Get dynamic window range.
-    std::pair<double, double> getMin = {std::max(minV, minVWithAcceleration), std::max(minOmega, minOmegaWithAcceleration)};
-    std::pair<double, double> getMax = {std::min(maxV, maxVWithAcceleration), std::min(maxOmega, maxOmegaWithAcceleration)};
+    std::pair<double, double> getMin = {std::max(minV, minVWithAcceleration), minOmega};
+    std::pair<double, double> getMax = {std::min(maxV, maxVWithAcceleration), maxOmega};
     return {getMin, getMax};
 }
 
@@ -80,7 +81,7 @@ double DWA::calcObstacleCost(const QVector<std::pair<double, double>> trajectory
             double dx = point.first - obstacle.first;
             double dy = point.second - obstacle.second;
             double distance = sqrt(dx * dx + dy * dy);
-            if(distance < 17){
+            if(distance < 19.2){
                 cost += 1.0 / distance;
             }
         }

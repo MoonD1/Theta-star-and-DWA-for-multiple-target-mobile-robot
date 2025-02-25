@@ -68,6 +68,7 @@ private:
     int bestPathSize = INT_MAX;
     QVector<int> bestPath;
     QVector<Node*> result;
+    bool inaccessible = false;
 
     RobotState robot;
     QSet<std::pair<double, double>> obstacles;
