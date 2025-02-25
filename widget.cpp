@@ -227,6 +227,12 @@ void Widget::searchPathButtonClicked(){
             pathTable[i][j] = findPath(nodes[i], nodes[i + j + 1]);
         }
     }
+
+    if(inaccessible){
+        qDebug() << "Error:Can't arrive at all end nodes";
+        return;
+    }
+
     // Get full arrangement.
     QVector<int> nums;
     QVector<bool> used(endNode.size(), false);
