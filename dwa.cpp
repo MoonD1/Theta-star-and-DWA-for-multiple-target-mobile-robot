@@ -81,7 +81,7 @@ double DWA::calcObstacleCost(const QVector<std::pair<double, double>> trajectory
             double dx = point.first - obstacle.first;
             double dy = point.second - obstacle.second;
             double distance = sqrt(dx * dx + dy * dy);
-            if(distance < 19.2){
+            if(distance < 15){
                 cost += 1.0 / distance;
             }
         }

@@ -98,9 +98,9 @@ void Widget::mousePressEvent(QMouseEvent* event){
     update();
 }
 
-// Use Manhattan distance as the heuristic function.
-int Widget::heuristic(const Node* node, const Node* endNode){
-    return std::abs(node -> x - endNode -> x) + std::abs(node -> y - endNode -> y);
+// Use Euclidean distance as the heuristic function.
+double Widget::heuristic(const Node* node, const Node* endNode){
+    return sqrt((node -> x - endNode -> x) * (node -> x - endNode -> x) + (node -> y - endNode -> y) * (node -> y - endNode -> y));
 }
 
 // Reset g/h/f/parent.
@@ -114,7 +114,7 @@ void Widget::reset(){
     }
 }
 
-// Get A* path.
+// Get Theta* path.
 QVector<Node*> Widget::findPath(Node* node1, Node* node2){
     if(!node1 || !node2){
         return {};
@@ -128,7 +128,7 @@ QVector<Node*> Widget::findPath(Node* node1, Node* node2){
     node1 -> h = node1 -> f = heuristic(node1, node2);
     openQueue.push(node1);
     openSet.insert(node1);
-    // A*.
+    // Theta*.
     while(!openSet.empty()){
         Node* current = openQueue.top();
         openQueue.pop();
@@ -168,6 +168,15 @@ QVector<Node*> Widget::findPath(Node* node1, Node* node2){
                 nextNode -> g = newG;
                 nextNode -> h = heuristic(nextNode, node2);
                 nextNode -> f = nextNode -> g + nextNode -> h;
+
+                // Update to Theta*
+                if(hitTestWithLine(current -> parent, nextNode)){
+                    nextNode -> parent = current -> parent;
+                    nextNode -> g = current -> parent -> g + heuristic(current -> parent, nextNode);
+                    nextNode -> f = nextNode -> g + nextNode -> h;
+                }
+
+
                 if(openSet.find(nextNode) == openSet.end()){
                     openQueue.push(nextNode);
                     openSet.insert(nextNode);
@@ -179,12 +188,93 @@ QVector<Node*> Widget::findPath(Node* node1, Node* node2){
     return {};
 }
 
+// Check line for Theta*.
+bool Widget::hitTestWithLine(Node* parent, Node* nextNode){
+    if(!parent || !nextNode){
+        return false;
+    }
+    double x0 = parent -> x;
+    double y0 = parent -> y;
+    double x1 = nextNode -> x;
+    double y1 = nextNode -> y;
+    // (y - y0) = k * (x - x0)
+    if(x1 == x0){
+        if(y0 > y1){
+            std::swap(y0 , y1);
+        }
+        x0 = x0 * 20 + 10;
+        for(double dy = y0 + 1; dy < y1; dy += 1){
+            dy = dy * 20 + 10;
+            for(std::pair<double, double> node : obstacles){
+                if(node.first != x0){
+                    continue;
+                }
+                if(dy == node.second){
+                    return false;
+                }
+            }
+        }
+    }
+    else if(y1 == y0){
+        if(x0 > x1){
+            std::swap(x0, x1);
+        }
+        y0 = y0 * 20 + 10;
+        for(double dx = x0 + 1; dx > x1; dx += 1){
+            dx = dx * 20 + 10;
+            for(std::pair<double, double> node : obstacles){
+                if(node.second != y0){
+                    continue;
+                }
+                if(dx == node.first){
+                    return false;
+                }
+            }
+        }
+    }
+    else{
+        double k = (y1 - y0) / (x1 - x0);
+        x0 = x0 * 20 + 10;
+        y0 = y0 * 20 + 10;
+        x1 = x1 * 20 + 10;
+        y1 = y1 * 20 + 10;
+        for(std::pair<double, double> node : obstacles){
+            if(node.first + 10 < std::min(x0, x1) || node.first - 10 > std::max(x0, x1) || node.second + 10 < std::min(y0, y1) || node.second - 10 > std::max(y0, y1)){
+                continue;
+            }
+            double windowTop = node.second - 10;
+            double windowBottom = node.second + 10;
+            double windowLeft = node.first - 10;
+            double windowRight = node.first + 10;
+            // y = k * (x - x0) + y0;
+            double leftPoint = k * (windowLeft - x0) + y0;
+            if(leftPoint <= windowBottom && leftPoint >= windowBottom){
+                return false;
+            }
+            double rightPoint = k * (windowRight - x0) + y0;
+            if(rightPoint <= windowBottom && rightPoint >= windowBottom){
+                return false;
+            }
+            // x = (y - y0) / k + x0;
+            double topPoint = (windowTop - y0) / k + x0;
+            if(topPoint <= windowRight && topPoint >= windowLeft){
+                return false;
+            }
+            double bottomPoint = (windowBottom - y0) / k + x0;
+            if(bottomPoint <= windowRight && bottomPoint >= windowLeft){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 // Calculate path size.
 int Widget::calculatePath(int start, int end) const{
     if(start > end){
         std::swap(start, end);
     }
-    return pathTable[start][end - start - 1].size();
+    return lengthTable[start][end - start - 1];
 }
 
 // Get all possible path using backtracking algorithm and choose the shortest path.
@@ -221,10 +311,13 @@ void Widget::searchPathButtonClicked(){
         nodes.push_back(endNode[i]);
     }
     pathTable.resize(nodes.size() - 1);
+    lengthTable.resize(nodes.size() - 1);
     for(int i = 0; i < nodes.size() - 1; i++){
         pathTable[i].resize(nodes.size() - 1 - i);
+        lengthTable[i].resize(nodes.size() - 1 - i);
         for(int j = 0; j < nodes.size() - 1 - i; j++){
             pathTable[i][j] = findPath(nodes[i], nodes[i + j + 1]);
+            lengthTable[i][j] = pathTable[i][j].back()->g;
         }
     }
 

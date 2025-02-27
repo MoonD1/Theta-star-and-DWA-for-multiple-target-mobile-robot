@@ -65,6 +65,7 @@ private:
     */
     QVector<Node*> nodes;
     QVector<QVector<QVector<Node*>>> pathTable;
+    QVector<QVector<double>> lengthTable;
     int bestPathSize = INT_MAX;
     QVector<int> bestPath;
     QVector<Node*> result;
@@ -79,11 +80,13 @@ private:
     // Make initialize grid.
     void drawGrid(QPainter& painter);
     // Use Manhattan distance as the heuristic function.
-    int heuristic(const Node* node, const Node* endNode);
+    double heuristic(const Node* node, const Node* endNode);
     // Reset g/h/f/parent
     void reset();
-    // Get A* path.
+    // Get Theta* path.
     QVector<Node*> findPath(Node* node1, Node* node2);
+    // Check line for Theta*.
+    bool hitTestWithLine(Node* current, Node* nextNode);
     // Calculate path size.
     int calculatePath(int start, int end) const;
     // Get all possible path using backtracking algorithm and choose the shortest path.
