@@ -5,10 +5,11 @@
 #include <queue>
 #include <unordered_set>
 
-Widget::Widget(QWidget *parent)
-    : QWidget(parent)
+Widget::Widget(QWidget *parent, int height, int width)
+    : QWidget(parent), gridHeight(height), gridWidth(width)
 {
-    initializeGrid(20, 20);
+
+    initializeGrid(gridHeight, gridWidth);
 
     // Set window title.
     this->setWindowTitle("Path Simulation");
@@ -16,16 +17,17 @@ Widget::Widget(QWidget *parent)
     // Set window size.
     // this->resize(WIDTH, HEIGHT);
     // this->setMinimumSize(WIDTH, HEIGHT);
-    this->setFixedSize(WIDTH, HEIGHT);
+    this->setFixedSize(gridWidth * 20 + 200, gridHeight * 20);
 
     // Add push button to search path
     QPushButton* searchPathButton = new QPushButton("Search Path", this);
-    searchPathButton -> setGeometry(450, 180, 100, 40);
+    searchPathButton -> setGeometry(gridWidth * 20 + 50, gridHeight * 10 - 20, 100, 40);
     connect(searchPathButton, &QPushButton::clicked, this, &Widget::searchPathButtonClicked);
 }
 
+
 // Initialize.
-void Widget::initializeGrid(int width, int height){
+void Widget::initializeGrid(int height, int width){
     grid.resize(width);
     for(int i = 0; i < width; i++){
         grid[i].resize(height);
@@ -70,7 +72,7 @@ void Widget::drawGrid(QPainter& painter){
 
 // The function of mouse click event.
 void Widget::mousePressEvent(QMouseEvent* event){
-    if(event -> pos().x() > 400 || event -> pos().y() > 400){
+    if(event -> pos().x() > gridWidth * 20 || event -> pos().y() > gridHeight * 20){
         return;
     }
     int x = event -> pos().x() / 20;
@@ -105,8 +107,8 @@ double Widget::heuristic(const Node* node, const Node* endNode){
 
 // Reset g/h/f/parent.
 void Widget::reset(){
-    for(int i = 0; i < 20; i++){
-        for(int j = 0; j < 20; j++){
+    for(int i = 0; i < grid.size(); i++){
+        for(int j = 0; j < grid[0].size(); j++){
             grid[i][j].g = grid[i][j].f = INT_MAX;
             grid[i][j].h = 0;
             grid[i][j].parent = nullptr;
@@ -204,12 +206,12 @@ bool Widget::hitTestWithLine(Node* parent, Node* nextNode){
         }
         x0 = x0 * 20 + 10;
         for(double dy = y0 + 1; dy < y1; dy += 1){
-            dy = dy * 20 + 10;
+            double cury = dy * 20 + 10;
             for(std::pair<double, double> node : obstacles){
                 if(node.first != x0){
                     continue;
                 }
-                if(dy == node.second){
+                if(cury == node.second){
                     return false;
                 }
             }
@@ -220,13 +222,13 @@ bool Widget::hitTestWithLine(Node* parent, Node* nextNode){
             std::swap(x0, x1);
         }
         y0 = y0 * 20 + 10;
-        for(double dx = x0 + 1; dx > x1; dx += 1){
-            dx = dx * 20 + 10;
+        for(double dx = x0 + 1; dx < x1; dx += 1){
+            double curx = dx * 20 + 10;
             for(std::pair<double, double> node : obstacles){
                 if(node.second != y0){
                     continue;
                 }
-                if(dx == node.first){
+                if(curx == node.first){
                     return false;
                 }
             }
@@ -382,8 +384,8 @@ void Widget::searchPathButtonClicked(){
 
 // Convert point coordinates to pixel coordinates.
 void Widget::CoordinateTransformation(){
-    for(int i = 0; i < 20; i++){
-        for(int j = 0; j < 20; j++){
+    for(int i = 0; i < grid.size(); i++){
+        for(int j = 0; j < grid[0].size(); j++){
             grid[i][j].x = grid[i][j].x * 20 + 10;
             grid[i][j].y = grid[i][j].y * 20 + 10;
         }
@@ -396,6 +398,9 @@ void Widget::DWAStart(){
     robotInitialized = true;
     CoordinateTransformation();
 
+    // Set initial attribute.
+    // DWA::setAttribute(3.0, -0.5, 40.0 * M_PI / 180.0, 0.2, 40.0 * M_PI / 180.0, 0.01, 0.1 * M_PI / 180.0, 0.1, 3.0, 0.15, 1.0, 1.0, 0.001, 14.0);
+
     if(!result.empty()){
         for(Node* node : result){
             qDebug() << "(" << node -> x << ", " << node -> y << ")";
@@ -406,6 +411,9 @@ void Widget::DWAStart(){
     robot.x = result[0] -> x;
     robot.y = result[0] -> y;
     result.pop_front();
+
+
+
     // Set timer.
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Widget::updateRobot);
@@ -422,14 +430,14 @@ void Widget::updateRobot(){
     // Update robot state.
     // v = 0.5;
     //  omega = 0.5;
+    robot.theta += omega * DWA::getDt();
+    robot.x += v * cos(robot.theta) * DWA::getDt();
+    robot.y += v * sin(robot.theta) * DWA::getDt();
     robot.v = v;
     robot.omega = omega;
-    robot.x += robot.v * cos(robot.theta);
-    robot.y += robot.v * sin(robot.theta);
     if(resultInRange()){
         result.pop_front();
     }
-    robot.theta += robot.omega;
     update();
 }
 

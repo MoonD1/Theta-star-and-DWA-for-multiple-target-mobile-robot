@@ -11,10 +11,12 @@ CONFIG += c++17
 SOURCES += \
     dwa.cpp \
     main.cpp \
+    start.cpp \
     widget.cpp
 
 HEADERS += \
     dwa.h \
+    start.h \
     widget.h
 
 # Default rules for deployment.

@@ -42,16 +42,22 @@ class Widget : public QWidget
     Q_OBJECT
 
 public:
-    Widget(QWidget* parent = nullptr);
+    Widget(QWidget* parent = nullptr, int height = 20, int width = 20);
 
     // The function of receiving paint events passed in event.
     void paintEvent(QPaintEvent* event) override;
     // The function of mouse click event.
     void mousePressEvent(QMouseEvent* event) override;
 
+
+
     ~Widget();
 
 private:
+    // Size of Widget.
+    int gridHeight = 20;
+    int gridWidth = 20;
+
     QVector<QVector<Node>> grid;
     Node* startNode = nullptr;
     QVector<Node*> endNode;
