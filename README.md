@@ -10,7 +10,7 @@ v2.0:
 v3.0:  
 &emsp;Write hit test and change A* algorithm to Theta* algorithm.  
   
-v3.1:
+v3.1:  
 &emsp;Debug the judge of obstacles.  
   
 v3.2:  
