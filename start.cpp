@@ -18,24 +18,21 @@ Start::Start(QWidget* parent)
     this->setFixedSize(300, 150);
 
     // Set Height and Width.
-    QLabel* heightLabel = new QLabel("网格高度:", this);
+    QLabel* heightLabel = new QLabel("Grids height:", this);
     heightEdit = new QLineEdit(this);
-    heightEdit -> setPlaceholderText("1~50, 默认20");
+    heightEdit -> setPlaceholderText("20~50, default 20");
     // heightEdit -> setGeometry(50, 30, 200, 30);
 
-    QLabel* widthLabel = new QLabel("网格宽度:", this);
+    QLabel* widthLabel = new QLabel("Grids width:", this);
     widthEdit = new QLineEdit(this);
-    widthEdit -> setPlaceholderText("1~50, 默认20");
+    widthEdit -> setPlaceholderText("20~50, defalut 20");
     // widthEdit -> setGeometry(50, 80, 200, 30);
 
-    QRegularExpression sizeRegExp("^(?:[1-9]|[1-4][0-9]|[5][0])$");
+    QRegularExpression sizeRegExp("^(?:[2-4][0-9]|[5][0])$");
     heightEdit -> setValidator(new QRegularExpressionValidator(sizeRegExp, heightEdit));
     widthEdit -> setValidator(new QRegularExpressionValidator(sizeRegExp, widthEdit));
 
     QPushButton* start = new QPushButton("start", this);
-
-
-
     connect(start, &QPushButton::clicked, [&](){
         int height = heightEdit -> text().toInt();
         int width = widthEdit -> text().toInt();
@@ -43,6 +40,8 @@ Start::Start(QWidget* parent)
         widget -> show();
         this -> close();
     });
+
+    QLabel* text = new QLabel("Tip: a grid = 20m * 20m");
 
     QVBoxLayout* bigLayout = new QVBoxLayout(this);
     QHBoxLayout* layout1 = new QHBoxLayout();
@@ -53,6 +52,7 @@ Start::Start(QWidget* parent)
     layout2 -> addWidget(widthEdit);
     bigLayout -> addLayout(layout1);
     bigLayout -> addLayout(layout2);
+    bigLayout -> addWidget(text);
     bigLayout -> addWidget(start);
 
 

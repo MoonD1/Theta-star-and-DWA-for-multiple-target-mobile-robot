@@ -7,8 +7,12 @@
 #include <math.h>
 #include <QPushButton>
 #include <QTimer>
+#include <QVBoxLayout>
+#include <QStackedWidget>
 
 #include "dwa.h"
+
+
 
 // The nodes in grid.
 struct Node{
@@ -42,7 +46,7 @@ class Widget : public QWidget
     Q_OBJECT
 
 public:
-    Widget(QWidget* parent = nullptr, int height = 20, int width = 20);
+    explicit Widget(QWidget* parent = nullptr, int height = 20, int width = 20);
 
     // The function of receiving paint events passed in event.
     void paintEvent(QPaintEvent* event) override;
@@ -58,6 +62,7 @@ private:
     int gridHeight = 20;
     int gridWidth = 20;
 
+    // Theta* part.
     QVector<QVector<Node>> grid;
     Node* startNode = nullptr;
     QVector<Node*> endNode;
@@ -77,9 +82,7 @@ private:
     QVector<Node*> result;
     bool inaccessible = false;
 
-    RobotState robot;
-    QSet<std::pair<double, double>> obstacles;
-    bool robotInitialized = false;
+
 
     // Initialize.
     void initializeGrid(int width, int height);
@@ -100,6 +103,11 @@ private:
     // If click searchPathButton.
     void searchPathButtonClicked();
 
+    // DWA part.
+    RobotState robot;
+    QSet<std::pair<double, double>> obstacles;
+    bool robotInitialized = false;
+
     // Convert point coordinates to pixel coordinates.
     void CoordinateTransformation();
     // Start DWA.
@@ -110,5 +118,13 @@ private:
     void drawRobot(QPainter& painter);
     // If get result front node.
     bool resultInRange() const;
+
+    // Shift widgets part.
+    QStackedWidget* pStack;
+    int mode = 0;
+
+    void showSEOWidget();
+    void showRobotWidget();
+    void showMoveOWidget();
 };
 #endif // WIDGET_H

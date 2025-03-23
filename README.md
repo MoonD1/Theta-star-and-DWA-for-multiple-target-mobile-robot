@@ -24,4 +24,8 @@ v5.0:
 &emsp;Debug the hit test (find a new bug of hit test qwq~).  
 &emsp;Add start.cpp, start.h.  
   
-        
+v6.0:  
+&emsp;Debug the hit test (why are there so much bugs in hit test qwq~).  
+&emsp;Implement page switching.  
+&emsp;Add setseo.cpp, setseo.h, setrobot.cpp, setrobot.h, setmoveo.cpp, setmoveo.h.  
+&emsp;"Basic opeation" part and "Robot setting" part have finished.  

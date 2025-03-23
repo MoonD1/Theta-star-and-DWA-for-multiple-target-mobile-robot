@@ -4,6 +4,9 @@
 
 #include <queue>
 #include <unordered_set>
+#include "setseo.h"
+#include "setrobot.h"
+#include "setmoveo.h"
 
 Widget::Widget(QWidget *parent, int height, int width)
     : QWidget(parent), gridHeight(height), gridWidth(width)
@@ -17,12 +20,44 @@ Widget::Widget(QWidget *parent, int height, int width)
     // Set window size.
     // this->resize(WIDTH, HEIGHT);
     // this->setMinimumSize(WIDTH, HEIGHT);
-    this->setFixedSize(gridWidth * 20 + 200, gridHeight * 20);
+    this->setFixedSize(gridWidth * 20 + 400, gridHeight * 20);
 
-    // Add push button to search path
+    // Set layout.
+    QVBoxLayout* bigLayout = new QVBoxLayout(this);
+    bigLayout -> setContentsMargins(gridWidth * 20 + 10, 0, 10, 40);
+
+    QHBoxLayout* topLayout = new QHBoxLayout();
+    QPushButton* setStartEndObstacles = new QPushButton("1.Basic operation");
+    QPushButton* setRobotAttribute = new QPushButton("2.Robot setting");
+    QPushButton* setMoveableObs = new QPushButton("3.Mobile obstacles");
+    topLayout -> addWidget(setStartEndObstacles);
+    topLayout -> addWidget(setRobotAttribute);
+    topLayout -> addWidget(setMoveableObs);
+    setStartEndObstacles -> setFixedSize(130, 30);
+    setRobotAttribute -> setFixedSize(130, 30);
+    setMoveableObs -> setFixedSize(130, 30);
+    connect(setStartEndObstacles, &QPushButton::clicked, this, &Widget::showSEOWidget);
+    connect(setRobotAttribute, &QPushButton::clicked, this, &Widget::showRobotWidget);
+    connect(setMoveableObs, &QPushButton::clicked, this, &Widget::showMoveOWidget);
+
+
+    pStack = new QStackedWidget();
+    SetSEO* setSEO = new SetSEO();
+    SetRobot* setRobot = new SetRobot();
+    SetMoveO* setMoveO = new SetMoveO();
+    pStack -> addWidget(setSEO);
+    pStack -> addWidget(setRobot);
+    pStack -> addWidget(setMoveO);
+
+    // Add push button to search path.
     QPushButton* searchPathButton = new QPushButton("Search Path", this);
-    searchPathButton -> setGeometry(gridWidth * 20 + 50, gridHeight * 10 - 20, 100, 40);
     connect(searchPathButton, &QPushButton::clicked, this, &Widget::searchPathButtonClicked);
+
+    bigLayout -> addLayout(topLayout);
+    bigLayout -> addWidget(pStack);
+    // bigLayout -> addWidget(searchPathButton);
+    searchPathButton -> setGeometry(gridWidth * 20 + 50, gridHeight * 20 - 40, 300, 30);
+
 }
 
 
@@ -77,26 +112,36 @@ void Widget::mousePressEvent(QMouseEvent* event){
     }
     int x = event -> pos().x() / 20;
     int y = event -> pos().y() / 20;
-    // Use leftbutton set obstacle.
-    if(event -> button() == Qt::LeftButton){
-        grid[x][y].isObstacle = !grid[x][y].isObstacle;
-        if(obstacles.find({grid[x][y].x * 20 + 10, grid[x][y].y * 20 + 10}) == obstacles.end()){
-            obstacles.insert({grid[x][y].x * 20 + 10, grid[x][y].y * 20 + 10});
+    switch(mode){
+    case 0:
+        // Use leftbutton set obstacle.
+        if(event -> button() == Qt::LeftButton){
+            grid[x][y].isObstacle = !grid[x][y].isObstacle;
+            if(obstacles.find({grid[x][y].x * 20 + 10, grid[x][y].y * 20 + 10}) == obstacles.end()){
+                obstacles.insert({grid[x][y].x * 20 + 10, grid[x][y].y * 20 + 10});
+            }
+            else{
+                obstacles.remove({grid[x][y].x * 20 + 10, grid[x][y].y * 20 + 10});
+            }
         }
-        else{
-            obstacles.remove({grid[x][y].x * 20 + 10, grid[x][y].y * 20 + 10});
-        }
-    }
-    // Use rightbutton set start/end node.
-    else if(event -> button() == Qt::RightButton){
+        // Use rightbutton set start/end node.
+        else if(event -> button() == Qt::RightButton){
 
-        if(!startNode){
-            startNode = &grid[x][y];
+            if(!startNode){
+                startNode = &grid[x][y];
+            }
+            else{
+                endNode.push_back(&grid[x][y]);
+            }
         }
-        else{
-            endNode.push_back(&grid[x][y]);
-        }
+        break;
+    case 1:
+        break;
+    case 2:
+        break;
     }
+
+
     update();
 }
 
@@ -250,11 +295,11 @@ bool Widget::hitTestWithLine(Node* parent, Node* nextNode){
             double windowRight = node.first + 10;
             // y = k * (x - x0) + y0;
             double leftPoint = k * (windowLeft - x0) + y0;
-            if(leftPoint <= windowBottom && leftPoint >= windowBottom){
+            if(leftPoint <= windowBottom && leftPoint >= windowTop){
                 return false;
             }
             double rightPoint = k * (windowRight - x0) + y0;
-            if(rightPoint <= windowBottom && rightPoint >= windowBottom){
+            if(rightPoint <= windowBottom && rightPoint >= windowTop){
                 return false;
             }
             // x = (y - y0) / k + x0;
@@ -452,6 +497,22 @@ void Widget::drawRobot(QPainter& painter){
 bool Widget::resultInRange() const{
     Node* front = result[0];
     return pow((robot.x - front -> x), 2) + pow((robot.y - front -> y), 2) <= 25;
+}
+
+// Shift widgets.
+void Widget::showSEOWidget(){
+    pStack -> setCurrentIndex(0);
+    mode = 0;
+}
+
+void Widget::showRobotWidget(){
+    pStack -> setCurrentIndex(1);
+    mode = 1;
+}
+
+void Widget::showMoveOWidget(){
+    pStack -> setCurrentIndex(2);
+    mode = 2;
 }
 
 Widget::~Widget() {}

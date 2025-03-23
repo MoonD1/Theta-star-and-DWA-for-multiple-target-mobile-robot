@@ -1,0 +1,12 @@
+debug/dwa.o
+debug/main.o
+debug/setmoveo.o
+debug/setrobot.o
+debug/setseo.o
+debug/start.o
+debug/widget.o
+debug/moc_setmoveo.o
+debug/moc_setrobot.o
+debug/moc_setseo.o
+debug/moc_start.o
+debug/moc_widget.o

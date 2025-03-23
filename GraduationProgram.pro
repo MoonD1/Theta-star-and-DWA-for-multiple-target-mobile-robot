@@ -11,11 +11,17 @@ CONFIG += c++17
 SOURCES += \
     dwa.cpp \
     main.cpp \
+    setmoveo.cpp \
+    setrobot.cpp \
+    setseo.cpp \
     start.cpp \
     widget.cpp
 
 HEADERS += \
     dwa.h \
+    setmoveo.h \
+    setrobot.h \
+    setseo.h \
     start.h \
     widget.h
 
