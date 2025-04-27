@@ -1,3 +1,6 @@
+Introduction:  
+&emsp;This is my Undergraduate Graduation Project. It's a design of the motion planning system with multiple target positions for a mobile robot,using Qt, C++, Theta* algorithm, DWA algorithm.
+  
 v1.0:  
 &emsp;Paint basic widget and implement A* algorithm.  
 &emsp;Add main.cpp, widget.cpp, widget.h.  
