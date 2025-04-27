@@ -20,7 +20,12 @@ SetRobot::SetRobot(QWidget *parent)
     QHBoxLayout* line12 = new QHBoxLayout();
     QHBoxLayout* line13 = new QHBoxLayout();
     QHBoxLayout* line14 = new QHBoxLayout();
+    QHBoxLayout* line15 = new QHBoxLayout();
     QHBoxLayout* button = new QHBoxLayout();
+
+    QLabel* pi1 = new QLabel("* PI / 180.0", this);
+    QLabel* pi2 = new QLabel("* PI / 180.0", this);
+    QLabel* pi3 = new QLabel("* PI / 180.0", this);
 
     QLabel* maxSpeedLabel = new QLabel("max_speed:", this);
     QLabel* minSpeedLabel = new QLabel("min_speed:", this);
@@ -34,6 +39,7 @@ SetRobot::SetRobot(QWidget *parent)
     QLabel* toGoalCostCoefficientLabel = new QLabel("to_goal_cost_coe:", this);
     QLabel* speedCostCoefficientLabel = new QLabel("speed_cost_coe:", this);
     QLabel* obstacleCostCoefficientLabel = new QLabel("obstacle_cost_coe:", this);
+    QLabel* mobileObsCostCoefficientLabel = new QLabel("mobile_obs_cost_coe:", this);
     QLabel* robotStuckFlagConsLabel = new QLabel("robot_stuck_flag_cons:", this);
     QLabel* robotRadiusLabel = new QLabel("robot_radius:", this);
 
@@ -49,23 +55,25 @@ SetRobot::SetRobot(QWidget *parent)
     toGoalCostCoefficientEdit = new QLineEdit(this);
     speedCostCoefficientEdit = new QLineEdit(this);
     obstacleCostCoefficientEdit = new QLineEdit(this);
+    mobileObsCostCoefficientEdit = new QLineEdit(this);
     robotStuckFlagConsEdit = new QLineEdit(this);
     robotRadiusEdit = new QLineEdit(this);
 
     maxSpeedEdit -> setPlaceholderText("m/s, default 3.0");
     minSpeedEdit -> setPlaceholderText("m/s, default -0.5");
-    maxYawRateEdit -> setPlaceholderText("rad/s, default 40*PI/180");
+    maxYawRateEdit -> setPlaceholderText("rad/s, default 40.0");
     maxAccelEdit -> setPlaceholderText("m/ss, default 0.2");
-    maxDeltaYawRateEdit -> setPlaceholderText("rad/ss, default 40*PI/180");
+    maxDeltaYawRateEdit -> setPlaceholderText("rad/ss, default 40.0");
     vResolutionEdit -> setPlaceholderText("m/s, default 0.01");
-    yawRateResolutionEdit -> setPlaceholderText("rad/s, default 0.1*PI/180");
+    yawRateResolutionEdit -> setPlaceholderText("rad/s, default 0.1");
     dtEdit -> setPlaceholderText("s, default 0.5");
     predictTimeEdit -> setPlaceholderText("s, default 3.0");
     toGoalCostCoefficientEdit -> setPlaceholderText("default 0.15");
     speedCostCoefficientEdit -> setPlaceholderText("default 1.0");
     obstacleCostCoefficientEdit -> setPlaceholderText("default 1.0");
+    mobileObsCostCoefficientEdit -> setPlaceholderText("default 100.0");
     robotStuckFlagConsEdit -> setPlaceholderText("default 0.001");
-    robotRadiusEdit -> setPlaceholderText("m, default 14.0");
+    robotRadiusEdit -> setPlaceholderText("m, default 15.0");
 
     QPushButton* apply = new QPushButton("Apply");
     apply -> setFixedSize(200, 25);
@@ -77,14 +85,17 @@ SetRobot::SetRobot(QWidget *parent)
     line2 -> addWidget(minSpeedEdit);
     line3 -> addWidget(maxYawRateLabel);
     line3 -> addWidget(maxYawRateEdit);
+    line3 -> addWidget(pi1);
     line4 -> addWidget(maxAccelLabel);
     line4 -> addWidget(maxAccelEdit);
     line5 -> addWidget(maxDeltaYawRateLabel);
     line5 -> addWidget(maxDeltaYawRateEdit);
+    line5 -> addWidget(pi2);
     line6 -> addWidget(vResolutionLabel);
     line6 -> addWidget(vResolutionEdit);
     line7 -> addWidget(yawRateResolutionLabel);
     line7 -> addWidget(yawRateResolutionEdit);
+    line7 -> addWidget(pi3);
     line8 -> addWidget(dtLabel);
     line8 -> addWidget(dtEdit);
     line9 -> addWidget(predictTimeLabel);
@@ -95,10 +106,12 @@ SetRobot::SetRobot(QWidget *parent)
     line11 -> addWidget(speedCostCoefficientEdit);
     line12 -> addWidget(obstacleCostCoefficientLabel);
     line12 -> addWidget(obstacleCostCoefficientEdit);
-    line13 -> addWidget(robotStuckFlagConsLabel);
-    line13 -> addWidget(robotStuckFlagConsEdit);
-    line14 -> addWidget(robotRadiusLabel);
-    line14 -> addWidget(robotRadiusEdit);
+    line13 -> addWidget(mobileObsCostCoefficientLabel);
+    line13 -> addWidget(mobileObsCostCoefficientEdit);
+    line14 -> addWidget(robotStuckFlagConsLabel);
+    line14 -> addWidget(robotStuckFlagConsEdit);
+    line15 -> addWidget(robotRadiusLabel);
+    line15 -> addWidget(robotRadiusEdit);
     button -> addWidget(apply);
     button -> setAlignment(apply, Qt::AlignRight);
 
@@ -116,13 +129,14 @@ SetRobot::SetRobot(QWidget *parent)
     layout -> addLayout(line12);
     layout -> addLayout(line13);
     layout -> addLayout(line14);
+    layout -> addLayout(line15);
     layout -> addLayout(button);
 
 }
 
 
 void SetRobot::setRobot(){
-    bool isEmpty[14];
+    bool isEmpty[15];
     double max_speed = maxSpeedEdit -> text().toDouble(&isEmpty[0]);
     double min_speed = minSpeedEdit -> text().toDouble(&isEmpty[1]);
     double max_yaw_rate = maxYawRateEdit -> text().toDouble(&isEmpty[2]);
@@ -135,23 +149,25 @@ void SetRobot::setRobot(){
     double to_goal_cost_coefficient = toGoalCostCoefficientEdit -> text().toDouble(&isEmpty[9]);
     double speed_cost_coefficient = speedCostCoefficientEdit -> text().toDouble(&isEmpty[10]);
     double obstacle_cost_coefficient = obstacleCostCoefficientEdit -> text().toDouble(&isEmpty[11]);
-    double robot_stuck_flag_cons = robotStuckFlagConsEdit -> text().toDouble(&isEmpty[12]);
-    double robot_radius = robotRadiusEdit -> text().toDouble(&isEmpty[13]);
+    double mobile_obs_cost_coefficient = mobileObsCostCoefficientEdit -> text().toDouble(&isEmpty[12]);
+    double robot_stuck_flag_cons = robotStuckFlagConsEdit -> text().toDouble(&isEmpty[13]);
+    double robot_radius = robotRadiusEdit -> text().toDouble(&isEmpty[14]);
 
     DWA::setAttribute(isEmpty[0] ? max_speed : 3.0,
                       isEmpty[1] ? min_speed : -0.5,
-                      isEmpty[2] ? max_yaw_rate : 40.0 * M_PI / 180.0,
+                      isEmpty[2] ? max_yaw_rate * M_PI / 180.0 : 40.0 * M_PI / 180.0,
                       isEmpty[3] ? max_accel : 0.2,
-                      isEmpty[4] ? max_delta_yaw_rate : 40.0 * M_PI / 180.0,
+                      isEmpty[4] ? max_delta_yaw_rate * M_PI / 180.0 : 40.0 * M_PI / 180.0,
                       isEmpty[5] ? v_resolution : 0.01,
-                      isEmpty[6] ? yaw_rate_resolution : 0.1 * M_PI / 180.0,
+                      isEmpty[6] ? yaw_rate_resolution * M_PI / 180.0 : 0.1 * M_PI / 180.0,
                       isEmpty[7] ? dt : 0.5,
                       isEmpty[8] ? predict_time : 3,
                       isEmpty[9] ? to_goal_cost_coefficient : 0.15,
                       isEmpty[10] ? speed_cost_coefficient : 1.0,
                       isEmpty[11] ? obstacle_cost_coefficient : 1.0,
-                      isEmpty[12] ? robot_stuck_flag_cons : 0.001,
-                      isEmpty[13] ? robot_radius : 14.0
+                      isEmpty[12] ? mobile_obs_cost_coefficient : 100.0,
+                      isEmpty[13] ? robot_stuck_flag_cons : 0.001,
+                      isEmpty[14] ? robot_radius : 15.0
                       );
 
 }

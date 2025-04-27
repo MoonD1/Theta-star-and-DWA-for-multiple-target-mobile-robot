@@ -11,6 +11,7 @@ CONFIG += c++17
 SOURCES += \
     dwa.cpp \
     main.cpp \
+    mobileobs.cpp \
     setmoveo.cpp \
     setrobot.cpp \
     setseo.cpp \
@@ -19,6 +20,7 @@ SOURCES += \
 
 HEADERS += \
     dwa.h \
+    mobileobs.h \
     setmoveo.h \
     setrobot.h \
     setseo.h \

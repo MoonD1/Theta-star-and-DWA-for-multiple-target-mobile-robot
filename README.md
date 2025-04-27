@@ -29,3 +29,9 @@ v6.0:
 &emsp;Implement page switching.  
 &emsp;Add setseo.cpp, setseo.h, setrobot.cpp, setrobot.h, setmoveo.cpp, setmoveo.h.  
 &emsp;"Basic opeation" part and "Robot setting" part have finished.  
+  
+v7.0:
+&emsp;Final version.  
+&emsp;Debug the hit test.  
+&emsp;"Mobile obstacles" part have finished.  
+&emsp;Revise the evaluation function of DWA to adaptation dynamic obstacles.  

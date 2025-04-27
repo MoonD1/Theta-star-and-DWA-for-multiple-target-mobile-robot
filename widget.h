@@ -11,7 +11,7 @@
 #include <QStackedWidget>
 
 #include "dwa.h"
-
+#include "mobileobs.h"
 
 
 // The nodes in grid.
@@ -84,6 +84,7 @@ private:
 
 
 
+
     // Initialize.
     void initializeGrid(int width, int height);
     // Make initialize grid.
@@ -118,6 +119,12 @@ private:
     void drawRobot(QPainter& painter);
     // If get result front node.
     bool resultInRange() const;
+
+
+    // Mobile Robots
+    void drawMobileObs(QPainter& painter);
+    void drawMobileRobots(QPainter& painter);
+    void mobileRobotsStart();
 
     // Shift widgets part.
     QStackedWidget* pStack;

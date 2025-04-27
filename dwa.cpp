@@ -1,4 +1,5 @@
 #include "dwa.h"
+#include "mobileobs.h"
 #include <QDebug>
 
 DWA::DWA() {}
@@ -17,11 +18,13 @@ double DWA::predict_time = 3; // s
 double DWA::to_goal_cost_coefficient = 0.15;
 double DWA::speed_cost_coefficient = 1.0;
 double DWA::obstacle_cost_coefficient = 1.0;
+double DWA::mobile_obs_cost_coefficient = 100.0;
 double DWA::robot_stuck_flag_cons = 0.001;
-double DWA::robot_radius = 14.0;
+double DWA::robot_radius = 14.2;
+
 
 void DWA::setAttribute(double max_v, double min_v, double max_y_r, double max_a, double max_d_y_r, double v_res, double y_r_res, double t, double pre_t, double t_g_c_coe,
-                       double s_c_coe, double o_c_coe, double r_s_f_cons, double r_rad){
+                       double s_c_coe, double o_c_coe, double m_o_c_coe, double r_s_f_cons, double r_rad){
     DWA::max_speed = max_v; // m/s
     DWA::min_speed = min_v; // m/s
     DWA::max_yaw_rate = max_y_r; // rad/s
@@ -34,6 +37,7 @@ void DWA::setAttribute(double max_v, double min_v, double max_y_r, double max_a,
     DWA::to_goal_cost_coefficient = t_g_c_coe;
     DWA::speed_cost_coefficient = s_c_coe;
     DWA::obstacle_cost_coefficient = o_c_coe;
+    DWA::mobile_obs_cost_coefficient = m_o_c_coe;
     DWA::robot_stuck_flag_cons = r_s_f_cons;
     DWA::robot_radius = r_rad;
 }
@@ -60,10 +64,11 @@ std::pair<double, double> DWA::calculateControl(const RobotState& robot, const Q
             double toGoalCost = to_goal_cost_coefficient * calcToGoalCost(trajectory, goal);
             double speedCost = speed_cost_coefficient * (max_speed - trajectory.back().v);
             double obstacleCost = obstacle_cost_coefficient * calcObstacleCost(trajectory, obstacles);
+            double mobileObsCost = mobile_obs_cost_coefficient * calcMobileObsCost(trajectory);
 
             // qDebug() << toGoalCost << " " << speedCost << " " << obstacleCost;
             // qDebug() << obstacleCost;
-            double finalCost = toGoalCost + obstacleCost + speedCost;
+            double finalCost = toGoalCost + obstacleCost + speedCost + mobileObsCost;
 
 
             if(minCost > finalCost){
@@ -143,6 +148,25 @@ double DWA::calcObstacleCost(const QVector<RobotState>& trajectory, const QSet<s
             }
         }
     }
+
+    return 1.0 / min_r;
+}
+
+double DWA::calcMobileObsCost(const QVector<RobotState>& trajectory){
+    double min_r = std::numeric_limits<double>::infinity();
+    for(const auto& point : trajectory){
+        // Mobile obstacle
+        for(const auto& robot : MobileObs::getRobots()){
+            double dx = point.x - robot -> x;
+            double dy = point.y - robot -> y;
+            double distance = sqrt(dx * dx + dy * dy);
+            min_r = std::min(min_r, distance);
+            if(distance < robot -> radius + robot -> speed * dt){
+                return std::numeric_limits<double>::infinity();
+            }
+        }
+    }
+
     return 1.0 / min_r;
 }
 

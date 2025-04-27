@@ -23,6 +23,7 @@ class SetRobot : public QWidget
     QLineEdit* toGoalCostCoefficientEdit;
     QLineEdit* speedCostCoefficientEdit;
     QLineEdit* obstacleCostCoefficientEdit;
+    QLineEdit* mobileObsCostCoefficientEdit;
     QLineEdit* robotStuckFlagConsEdit;
     QLineEdit* robotRadiusEdit;
 

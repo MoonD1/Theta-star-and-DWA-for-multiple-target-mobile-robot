@@ -7,6 +7,7 @@
 #include "setseo.h"
 #include "setrobot.h"
 #include "setmoveo.h"
+#include <QDebug>
 
 Widget::Widget(QWidget *parent, int height, int width)
     : QWidget(parent), gridHeight(height), gridWidth(width)
@@ -77,8 +78,10 @@ void Widget::paintEvent(QPaintEvent* event){
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     drawGrid(painter);
+    drawMobileObs(painter);
     if(robotInitialized){
         drawRobot(painter);
+        drawMobileRobots(painter);
     }
 }
 
@@ -136,8 +139,12 @@ void Widget::mousePressEvent(QMouseEvent* event){
         }
         break;
     case 1:
+        // Use leftbutton set mobile obstacle.
+        if(event -> button() == Qt::LeftButton){
+            MobileObs::setPath(event -> pos().x(), event -> pos().y());
+        }
         break;
-    case 2:
+    default:
         break;
     }
 
@@ -424,7 +431,7 @@ void Widget::searchPathButtonClicked(){
     */
 
     DWAStart();
-
+    //mobileRobotsStart();
 }
 
 // Convert point coordinates to pixel coordinates.
@@ -444,7 +451,7 @@ void Widget::DWAStart(){
     CoordinateTransformation();
 
     // Set initial attribute.
-    // DWA::setAttribute(3.0, -0.5, 40.0 * M_PI / 180.0, 0.2, 40.0 * M_PI / 180.0, 0.01, 0.1 * M_PI / 180.0, 0.1, 3.0, 0.15, 1.0, 1.0, 0.001, 14.0);
+    // DWA::setAttribute(3.0, -0.5, 40.0 * M_PI / 180.0, 0.2, 40.0 * M_PI / 180.0, 0.01, 0.1 * M_PI / 180.0, 0.1, 3.0, 0.15, 1.0, 1.0, 0.001, 15.0);
 
     if(!result.empty()){
         for(Node* node : result){
@@ -462,6 +469,7 @@ void Widget::DWAStart(){
     // Set timer.
     QTimer* timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &Widget::updateRobot);
+    connect(timer, &QTimer::timeout, this, &Widget::mobileRobotsStart);
     // Fixedupdate time.
     timer -> start(50);
 }
@@ -499,6 +507,65 @@ bool Widget::resultInRange() const{
     return pow((robot.x - front -> x), 2) + pow((robot.y - front -> y), 2) <= 25;
 }
 
+// Draw mobile robots.
+void Widget::drawMobileObs(QPainter& painter){
+    painter.setBrush(Qt::blue);
+    for(MobileRobot* robot : MobileObs::getRobots()){
+        for(std::pair<double, double> pa : robot -> path){
+            // qDebug() << pa.first << "  " << pa.second;
+            painter.drawEllipse(pa.first - 2.5, pa.second - 2.5, 5, 5);
+        }
+        for(int i = 0; i < robot -> path.size(); i++){
+            painter.drawEllipse(robot -> path[i].first - 2.5, robot -> path[i].second - 2.5, 5, 5);
+            if(i){
+                painter.drawLine(robot -> path[i].first, robot -> path[i].second, robot -> path[i - 1].first, robot -> path[i - 1].second);
+            }
+        }
+    }
+}
+
+void Widget::drawMobileRobots(QPainter& painter){
+    painter.setBrush(QColorConstants::Svg::purple);
+    for(MobileRobot* robot : MobileObs::getRobots()){
+        painter.drawEllipse(robot -> x - robot -> radius / 2, robot -> y - robot -> radius / 2, robot -> radius, robot -> radius);
+    }
+}
+
+// Move mobile robots.
+void Widget::mobileRobotsStart(){
+    for(MobileRobot* robot : MobileObs::getRobots()){
+        robot -> curLength = robot -> curLength + DWA::getDt() * robot -> speed;
+        while(robot -> curLength >= 2 * robot -> pathLength.back()){
+            robot -> curLength -= 2 * robot -> pathLength.back();
+        }
+        if(robot -> curLength <= robot -> pathLength.back()){
+            for(int i = 1; i < robot -> pathLength.size(); i++){
+                if(robot -> curLength < robot -> pathLength[i]){
+                    double extraPath = robot -> curLength - robot -> pathLength[i - 1];
+                    double u = extraPath / (robot -> pathLength[i] - robot -> pathLength[i - 1]);
+                    double v = 1 - u;
+                    robot -> x = robot -> path[i - 1].first * v + robot -> path[i].first * u;
+                    robot -> y = robot -> path[i - 1].second * v + robot -> path[i].second * u;
+                    break;
+                }
+            }
+        }
+        else{
+            double curLength = 2 * robot -> pathLength.back() - robot -> curLength;
+            for(int i = 1; i < robot -> pathLength.size(); i++){
+                if(curLength < robot -> pathLength[i]){
+                    double extraPath = curLength - robot -> pathLength[i - 1];
+                    double u = extraPath / (robot -> pathLength[i] - robot -> pathLength[i - 1]);
+                    double v = 1 - u;
+                    robot -> x = robot -> path[i - 1].first * v + robot -> path[i].first * u;
+                    robot -> y = robot -> path[i - 1].second * v + robot -> path[i].second * u;
+                    break;
+                }
+            }
+        }
+    }
+}
+
 // Shift widgets.
 void Widget::showSEOWidget(){
     pStack -> setCurrentIndex(0);
@@ -507,12 +574,12 @@ void Widget::showSEOWidget(){
 
 void Widget::showRobotWidget(){
     pStack -> setCurrentIndex(1);
-    mode = 1;
+    mode = 0;
 }
 
 void Widget::showMoveOWidget(){
     pStack -> setCurrentIndex(2);
-    mode = 2;
+    mode = 1;
 }
 
 Widget::~Widget() {}

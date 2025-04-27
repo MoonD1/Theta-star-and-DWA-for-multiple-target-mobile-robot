@@ -33,7 +33,7 @@ public:
 
     // Set attribute.
     static void setAttribute(double max_v, double min_v, double max_y_r, double max_a, double max_d_y_r, double v_res, double y_r_res, double t, double pre_t, double t_g_c_coe,
-                             double s_c_coe, double o_c_coe, double r_s_f_cons, double r_rad);
+                             double s_c_coe, double o_c_coe, double m_o_c_coe, double r_s_f_cons, double r_rad);
 
     // Get dt
     static double getDt();
@@ -48,6 +48,8 @@ private:
     static double calcToGoalCost(const QVector<RobotState>& trajectory, const std::pair<double, double>& goal);
     // Calculate the cost of obstacle.
     static double calcObstacleCost(const QVector<RobotState>& trajectory, const QSet<std::pair<double, double>>& obstacles);
+
+    static double calcMobileObsCost(const QVector<RobotState>& trajectory);
 
     ~DWA();
 
@@ -68,6 +70,7 @@ private:
     static double to_goal_cost_coefficient;
     static double speed_cost_coefficient;
     static double obstacle_cost_coefficient;
+    static double mobile_obs_cost_coefficient;
 
     static double robot_stuck_flag_cons; // constant to prevent robot stucked
     static double robot_radius;
