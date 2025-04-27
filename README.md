@@ -33,7 +33,7 @@ v6.0:
 &emsp;Add setseo.cpp, setseo.h, setrobot.cpp, setrobot.h, setmoveo.cpp, setmoveo.h.  
 &emsp;"Basic opeation" part and "Robot setting" part have finished.  
   
-v7.0:
+v7.0:  
 &emsp;Final version.  
 &emsp;Debug the hit test.  
 &emsp;"Mobile obstacles" part have finished.  
